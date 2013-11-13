@@ -247,7 +247,7 @@
           ],
         },
         {
-          'target_name': 'crash_inspector',
+          'target_name': 'Inspector',
           'type': 'executable',
           'variables': {
             'mac_real_dsym': 1,
@@ -312,7 +312,7 @@
           'type': 'static_library',
           'dependencies': [
             'breakpad_utilities',
-            'crash_inspector',
+            'Inspector',
             'crash_report_sender',
           ],
           'include_dirs': [
