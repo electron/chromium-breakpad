@@ -172,7 +172,7 @@
           'src',
         ],
         'configurations': {
-          'Debug_Base': {
+          'Debug': {
             'defines': [
               # This is needed for GTMLogger to work correctly.
               'DEBUG',
@@ -275,7 +275,7 @@
           'src',
         ],
         'configurations': {
-          'Debug_Base': {
+          'Debug': {
             'defines': [
               # This is needed for GTMLogger to work correctly.
               'DEBUG',
