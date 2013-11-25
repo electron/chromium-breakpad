@@ -652,9 +652,9 @@
           'target_name': 'breakpad_unittests',
           'type': 'executable',
           'dependencies': [
-            '../testing/gtest.gyp:gtest',
-            '../testing/gtest.gyp:gtest_main',
-            '../testing/gmock.gyp:gmock',
+            # '../testing/gtest.gyp:gtest',
+            # '../testing/gtest.gyp:gtest_main',
+            # '../testing/gmock.gyp:gmock',
             'breakpad_client',
             'breakpad_processor_support',
             'linux_dumper_unittest_helper',
@@ -720,7 +720,7 @@
                 'test_type': 'gtest',
                 'test_suite_name': '<(_target_name)',
               },
-              'includes': [ '../build/android/test_runner.gypi' ],
+              # 'includes': [ '../build/android/test_runner.gypi' ],
               'ldflags!': [
                 # We are overriding the build-id above so remove the default.
                 '-Wl,--build-id=sha1',
@@ -920,7 +920,7 @@
               'breakpad/breakpad.gyp',
             ],
           },
-          'includes': ['../build/ios/mac_build.gypi'],
+          # 'includes': ['../build/ios/mac_build.gypi'],
           'actions': [
             {
               'action_name': 'compile breakpad utilities',
@@ -1015,7 +1015,7 @@
              'extra_files': ['<(PRODUCT_DIR)/linux_dumper_unittest_helper'],
           },
           'includes': [
-            '../build/android/native_app_dependencies.gypi'
+            # '../build/android/native_app_dependencies.gypi'
           ],
         }
       ],
@@ -1030,7 +1030,7 @@
                   'breakpad_unittests',
                 ],
                 'includes': [
-                  '../build/isolate.gypi',
+                  # '../build/isolate.gypi',
                 ],
                 'sources': [
                   'breakpad_unittests_apk.isolate',
