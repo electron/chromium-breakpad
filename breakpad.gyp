@@ -162,7 +162,6 @@
           # GN version: //breakpad:dump_syms
           'target_name': 'dump_syms',
           'type': 'executable',
-          'toolsets': ['host'],
           'include_dirs': [
             'src/common/mac',
           ],
@@ -226,7 +225,6 @@
           # GN version: //breakpad:symupload
           'target_name': 'symupload',
           'type': 'executable',
-          'toolsets': ['host'],
           'include_dirs': [
             'src/common/mac',
           ],
