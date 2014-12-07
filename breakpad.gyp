@@ -13,6 +13,7 @@
     ['OS!="ios" and OS!="win"', {
       'targets': [
         {
+          # GN version: //breakpad:minidump_stackwalk
           'target_name': 'minidump_stackwalk',
           'type': 'executable',
           'includes': ['breakpad_tools.gypi'],
@@ -29,6 +30,8 @@
             'src/processor/cfi_frame_info.h',
             'src/processor/disassembler_x86.cc',
             'src/processor/disassembler_x86.h',
+            'src/processor/dump_context.cc',
+            'src/processor/dump_object.cc',
             'src/processor/exploitability.cc',
             'src/processor/exploitability_linux.cc',
             'src/processor/exploitability_linux.h',
@@ -45,12 +48,15 @@
             'src/processor/simple_symbol_supplier.cc',
             'src/processor/simple_symbol_supplier.h',
             'src/processor/source_line_resolver_base.cc',
+            'src/processor/stack_frame_cpu.cc',
             'src/processor/stack_frame_symbolizer.cc',
             'src/processor/stackwalker.cc',
             'src/processor/stackwalker_amd64.cc',
             'src/processor/stackwalker_amd64.h',
             'src/processor/stackwalker_arm.cc',
             'src/processor/stackwalker_arm.h',
+            'src/processor/stackwalker_arm64.cc',
+            'src/processor/stackwalker_arm64.h',
             'src/processor/stackwalker_mips.cc',
             'src/processor/stackwalker_mips.h',
             'src/processor/stackwalker_ppc.cc',
@@ -93,6 +99,7 @@
           ],
         },
         {
+          # GN version: //breakpad:minidump_dump
           'target_name': 'minidump_dump',
           'type': 'executable',
           'includes': ['breakpad_tools.gypi'],
@@ -100,6 +107,8 @@
             'src/processor/basic_code_module.h',
             'src/processor/basic_code_modules.cc',
             'src/processor/basic_code_modules.h',
+            'src/processor/dump_context.cc',
+            'src/processor/dump_object.cc',
             'src/processor/logging.cc',
             'src/processor/logging.h',
             'src/processor/minidump.cc',
@@ -126,6 +135,7 @@
       },
       'targets': [
         {
+          # GN version: //breakpad:dump_syms
           'target_name': 'dump_syms',
           'type': 'executable',
           'toolsets': ['host'],
@@ -191,6 +201,7 @@
           },
         },
         {
+          # GN version: //breakpad:symupload
           'target_name': 'symupload',
           'type': 'executable',
           'toolsets': ['host'],
@@ -225,9 +236,11 @@
       },
       'targets': [
         {
+          # GN version: //breakpad:utilities
           'target_name': 'breakpad_utilities',
           'type': 'static_library',
           'sources': [
+            'src/client/mac/crash_generation/ConfigFile.mm',
             'src/client/mac/handler/breakpad_nlist_64.cc',
             'src/client/mac/handler/dynamic_images.cc',
             'src/client/mac/handler/minidump_generator.cc',
@@ -237,6 +250,7 @@
             'src/common/mac/arch_utilities.cc',
             'src/common/mac/bootstrap_compat.cc',
             'src/common/mac/file_id.cc',
+            'src/common/mac/launch_reporter.cc',
             'src/common/mac/macho_id.cc',
             'src/common/mac/macho_utilities.cc',
             'src/common/mac/macho_walker.cc',
@@ -247,6 +261,7 @@
           ],
         },
         {
+          # GN version: //breakpad:crash_inspector
           'target_name': 'crash_inspector',
           'type': 'executable',
           'variables': {
@@ -260,7 +275,6 @@
             'src/common/mac',
           ],
           'sources': [
-            'src/client/mac/crash_generation/ConfigFile.mm',
             'src/client/mac/crash_generation/Inspector.mm',
             'src/client/mac/crash_generation/InspectorMain.mm',
           ],
@@ -272,6 +286,7 @@
           }
         },
         {
+          # GN version: //breakpad:crash_report_sender
           'target_name': 'crash_report_sender',
           'type': 'executable',
           'mac_bundle': 1,
@@ -308,6 +323,7 @@
           }
         },
         {
+          # GN version: //breakpad
           'target_name': 'breakpad',
           'type': 'static_library',
           'dependencies': [
@@ -337,7 +353,7 @@
         },
       ],
     }],
-    [ 'OS=="linux" or OS=="android"', {
+    [ 'OS=="linux" or OS=="android" or OS=="freebsd"', {
       'conditions': [
         ['OS=="android"', {
           'defines': [
@@ -348,6 +364,7 @@
       # Tools needed for archiving build symbols.
       'targets': [
         {
+          # GN version: //breakpad:symupload
           'target_name': 'symupload',
           'type': 'executable',
 
@@ -369,6 +386,7 @@
           },
         },
         {
+          # GN version: //breakpad:dump_syms
           'target_name': 'dump_syms',
           'type': 'executable',
           'conditions': [
@@ -395,6 +413,8 @@
             'src/common/dwarf_line_to_module.h',
             'src/common/language.cc',
             'src/common/language.h',
+            'src/common/linux/crc32.cc',
+            'src/common/linux/crc32.h',
             'src/common/linux/dump_symbols.cc',
             'src/common/linux/dump_symbols.h',
             'src/common/linux/elf_symbols_to_module.cc',
@@ -430,6 +450,7 @@
           ],
         },
         {
+          # GN version: //breakpad:client
           'target_name': 'breakpad_client',
           'type': 'static_library',
 
@@ -485,10 +506,6 @@
           ],
 
           'conditions': [
-            # Android NDK toolchain doesn't support -mimplicit-it=always
-            ['target_arch=="arm" and OS!="android"', {
-              'cflags': ['-Wa,-mimplicit-it=always'],
-            }],
             ['target_arch=="arm" and chromeos==1', {
               # Avoid running out of registers in
               # linux_syscall_support.h:sys_clone()'s inline assembly.
@@ -529,6 +546,7 @@
         },
         {
           # Breakpad r693 uses some files from src/processor in unit tests.
+          # GN version: //breakpad:processor_support
           'target_name': 'breakpad_processor_support',
           'type': 'static_library',
 
@@ -536,6 +554,8 @@
             'src/common/scoped_ptr.h',
             'src/processor/basic_code_modules.cc',
             'src/processor/basic_code_modules.h',
+            'src/processor/dump_context.cc',
+            'src/processor/dump_object.cc',
             'src/processor/logging.cc',
             'src/processor/logging.h',
             'src/processor/minidump.cc',
@@ -552,6 +572,7 @@
           ],
         },
         {
+          # GN version: //breakpad:breakpad_unittests
           'target_name': 'breakpad_unittests',
           'type': 'executable',
           'dependencies': [
@@ -562,6 +583,12 @@
             'breakpad_processor_support',
             'linux_dumper_unittest_helper',
           ],
+          'variables': {
+            'clang_warning_flags': [
+              # See http://crbug.com/138571#c18
+              '-Wno-unused-value',
+            ],
+          },
 
           'sources': [
             'linux/breakpad_googletest_includes.h',
@@ -578,13 +605,13 @@
             'src/common/linux/file_id_unittest.cc',
             'src/common/linux/linux_libc_support_unittest.cc',
             'src/common/linux/synth_elf.cc',
+            'src/common/linux/tests/auto_testfile.h',
             'src/common/linux/tests/crash_generator.cc',
             'src/common/linux/tests/crash_generator.h',
             'src/common/memory_range.h',
             'src/common/memory_unittest.cc',
             'src/common/simple_string_dictionary_unittest.cc',
             'src/common/test_assembler.cc',
-            'src/common/tests/auto_testfile.h',
             'src/common/tests/file_utils.cc',
             'src/common/tests/file_utils.h',
             'src/tools/linux/md2core/minidump_memory_range.h',
@@ -598,12 +625,6 @@
             '.',
           ],
           'conditions': [
-            [ 'clang == 1', {
-              'cflags': [
-                # See http://crbug.com/138571#c18
-                '-Wno-unused-value',
-              ],
-            }],
             ['OS=="android"', {
               'libraries': [
                 '-llog',
@@ -611,10 +632,14 @@
               'include_dirs': [
                 'src/common/android/include',
               ],
+              'sources': [
+                'src/common/android/breakpad_getcontext_unittest.cc',
+              ],
             }],
           ],
         },
         {
+          # GN version: //breakpad:linux_dumper_unittest_helper
           'target_name': 'linux_dumper_unittest_helper',
           'type': 'executable',
           'dependencies': [
@@ -637,6 +662,7 @@
           ],
         },
         {
+          # GN version: //breakpad:generate_test_dump
           'target_name': 'generate_test_dump',
           'type': 'executable',
 
@@ -664,6 +690,7 @@
           ],
         },
         {
+          # GN version: //breakpad:minidump-2-core
           'target_name': 'minidump-2-core',
           'type': 'executable',
 
@@ -681,6 +708,7 @@
           ],
         },
         {
+          # GN version: //breakpad:core-2-minidump
           'target_name': 'core-2-minidump',
           'type': 'executable',
 
@@ -702,6 +730,7 @@
     ['OS=="ios"', {
       'targets': [
         {
+          # GN version: //breakpad:client
           'target_name': 'breakpad_client',
           'type': 'static_library',
           'sources': [
@@ -753,24 +782,7 @@
             'src',
             'src/client/mac/Framework',
             'src/common/mac',
-            # For GTMLogger.
-            '<(DEPTH)/third_party/GTM',
-            '<(DEPTH)/third_party/GTM/Foundation',
           ],
-          'link_settings': {
-            # Build the version of GTMLogger.m in third_party rather than the
-            # one in src/common/mac because the former catches all exceptions
-            # whereas the latter lets them propagate, which can cause odd
-            # crashes.
-            'sources': [
-              '<(DEPTH)/third_party/GTM/Foundation/GTMLogger.h',
-              '<(DEPTH)/third_party/GTM/Foundation/GTMLogger.m',
-            ],
-            'include_dirs': [
-              '<(DEPTH)/third_party/GTM',
-              '<(DEPTH)/third_party/GTM/Foundation',
-            ],
-          },
         }
       ]
     }],
@@ -863,6 +875,21 @@
           'dependencies': [
             'breakpad_utilities',
           ],
+        }
+      ],
+    }],
+    ['OS=="android"', {
+      'targets': [
+        {
+          'target_name': 'breakpad_unittests_stripped',
+          'type': 'none',
+          'dependencies': [ 'breakpad_unittests' ],
+          'actions': [{
+            'action_name': 'strip breakpad_unittests',
+            'inputs': [ '<(PRODUCT_DIR)/breakpad_unittests' ],
+            'outputs': [ '<(PRODUCT_DIR)/breakpad_unittests_stripped' ],
+            'action': [ '<(android_strip)', '<@(_inputs)', '-o', '<@(_outputs)' ],
+          }],
         }
       ],
     }],
