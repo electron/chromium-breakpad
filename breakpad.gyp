@@ -1,7 +1,6 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 {
   'includes': [
     'breakpad_sender.gypi',
@@ -13,9 +12,10 @@
     ['OS!="ios" and OS!="win"', {
       'targets': [
         {
-          # GN version: //breakpad:minidump_stackwalk
-          'target_name': 'minidump_stackwalk',
-          'type': 'executable',
+          # code shared by both {micro,mini}dump_stackwalk
+          # GN version: //breakpad:stackwalk_common
+          'target_name': 'stackwalk_common',
+          'type': 'static_library',
           'includes': ['breakpad_tools.gypi'],
           'defines': ['BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR'],
           'sources': [
@@ -32,16 +32,8 @@
             'src/processor/disassembler_x86.h',
             'src/processor/dump_context.cc',
             'src/processor/dump_object.cc',
-            'src/processor/exploitability.cc',
-            'src/processor/exploitability_linux.cc',
-            'src/processor/exploitability_linux.h',
-            'src/processor/exploitability_win.cc',
-            'src/processor/exploitability_win.h',
             'src/processor/logging.cc',
             'src/processor/logging.h',
-            'src/processor/minidump.cc',
-            'src/processor/minidump_processor.cc',
-            'src/processor/minidump_stackwalk.cc',
             'src/processor/pathname_stripper.cc',
             'src/processor/pathname_stripper.h',
             'src/processor/process_state.cc',
@@ -50,6 +42,7 @@
             'src/processor/source_line_resolver_base.cc',
             'src/processor/stack_frame_cpu.cc',
             'src/processor/stack_frame_symbolizer.cc',
+            'src/processor/stackwalk_common.cc',
             'src/processor/stackwalker.cc',
             'src/processor/stackwalker_amd64.cc',
             'src/processor/stackwalker_amd64.h',
@@ -96,6 +89,37 @@
             'src/third_party/libdisasm/x86_misc.c',
             'src/third_party/libdisasm/x86_operand_list.c',
             'src/third_party/libdisasm/x86_operand_list.h',
+          ],
+        },
+        {
+          # GN version: //breakpad:microdump_stackwalk
+          'target_name': 'microdump_stackwalk',
+          'type': 'executable',
+          'dependencies': ['stackwalk_common'],
+          'includes': ['breakpad_tools.gypi'],
+          'defines': ['BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR'],
+          'sources': [
+            'src/processor/microdump.cc',
+            'src/processor/microdump_processor.cc',
+            'src/processor/microdump_stackwalk.cc',
+          ],
+        },
+        {
+          # GN version: //breakpad:minidump_stackwalk
+          'target_name': 'minidump_stackwalk',
+          'type': 'executable',
+          'dependencies': ['stackwalk_common'],
+          'includes': ['breakpad_tools.gypi'],
+          'defines': ['BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR'],
+          'sources': [
+            'src/processor/exploitability.cc',
+            'src/processor/exploitability_linux.cc',
+            'src/processor/exploitability_linux.h',
+            'src/processor/exploitability_win.cc',
+            'src/processor/exploitability_win.h',
+            'src/processor/minidump.cc',
+            'src/processor/minidump_processor.cc',
+            'src/processor/minidump_stackwalk.cc',
           ],
         },
         {
@@ -176,10 +200,8 @@
             'ARCHS': [
               'x86_64',
             ],
-
             # The DWARF utilities require -funsigned-char.
             'GCC_CHAR_IS_UNSIGNED_CHAR': 'YES',
-
             # dwarf2reader.cc uses dynamic_cast.
             'GCC_ENABLE_CPP_RTTI': 'YES',
           },
@@ -258,6 +280,17 @@
             'src/common/md5.cc',
             'src/common/simple_string_dictionary.cc',
             'src/common/string_conversion.cc',
+          ],
+          'conditions': [
+            ['OS=="ios"', {
+              'xcode_settings' : {
+                'WARNING_CFLAGS': [
+                  # MinidumpGenerator uses an API deprecated in iOS 7.
+                  # crbug.com/408562
+                  '-Wno-deprecated-declarations',
+                ],
+              },
+            }],
           ],
         },
         {
@@ -353,7 +386,7 @@
         },
       ],
     }],
-    [ 'OS=="linux" or OS=="android" or OS=="freebsd"', {
+    [ 'OS=="linux" or OS=="android" or os_bsd==1', {
       'conditions': [
         ['OS=="android"', {
           'defines': [
@@ -367,9 +400,7 @@
           # GN version: //breakpad:symupload
           'target_name': 'symupload',
           'type': 'executable',
-
           'includes': ['breakpad_tools.gypi'],
-
           'sources': [
             'src/tools/linux/symupload/sym_upload.cc',
             'src/common/linux/http_upload.cc',
@@ -394,13 +425,11 @@
               'toolsets': [ 'host' ],
             }],
           ],
-
           # dwarf2reader.cc uses dynamic_cast. Because we don't typically
           # don't support RTTI, we enable it for this single target. Since
           # dump_syms doesn't share any object files with anything else,
           # this doesn't end up polluting Chrome itself.
           'cflags_cc!': ['-fno-rtti'],
-
           'sources': [
             'src/common/dwarf/bytereader.cc',
             'src/common/dwarf_cfi_to_module.cc',
@@ -436,14 +465,12 @@
             'src/common/stabs_to_module.h',
             'src/tools/linux/dump_syms/dump_syms.cc',
           ],
-
           # Breakpad rev 583 introduced this flag.
           # Using this define, stabs_reader.h will include a.out.h to
           # build on Linux.
           'defines': [
             'HAVE_A_OUT_H',
           ],
-
           'include_dirs': [
             'src',
             '..',
@@ -453,7 +480,6 @@
           # GN version: //breakpad:client
           'target_name': 'breakpad_client',
           'type': 'static_library',
-
           'sources': [
             'src/client/linux/crash_generation/crash_generation_client.cc',
             'src/client/linux/crash_generation/crash_generation_client.h',
@@ -463,6 +489,15 @@
             'src/client/linux/handler/minidump_descriptor.h',
             'src/client/linux/log/log.cc',
             'src/client/linux/log/log.h',
+            'src/client/linux/dump_writer_common/mapping_info.h',
+            'src/client/linux/dump_writer_common/seccomp_unwinder.cc',
+            'src/client/linux/dump_writer_common/seccomp_unwinder.h',
+            'src/client/linux/dump_writer_common/thread_info.cc',
+            'src/client/linux/dump_writer_common/thread_info.h',
+            'src/client/linux/dump_writer_common/ucontext_reader.cc',
+            'src/client/linux/dump_writer_common/ucontext_reader.h',
+            'src/client/linux/microdump_writer/microdump_writer.cc',
+            'src/client/linux/microdump_writer/microdump_writer.h',
             'src/client/linux/minidump_writer/cpu_set.h',
             'src/client/linux/minidump_writer/directory_reader.h',
             'src/client/linux/minidump_writer/line_reader.h',
@@ -504,7 +539,6 @@
             'src/common/string_conversion.cc',
             'src/common/string_conversion.h',
           ],
-
           'conditions': [
             ['target_arch=="arm" and chromeos==1', {
               # Avoid running out of registers in
@@ -535,7 +569,6 @@
               },
             }],
           ],
-
           'include_dirs': [
             'src',
             'src/client',
@@ -549,7 +582,6 @@
           # GN version: //breakpad:processor_support
           'target_name': 'breakpad_processor_support',
           'type': 'static_library',
-
           'sources': [
             'src/common/scoped_ptr.h',
             'src/processor/basic_code_modules.cc',
@@ -562,7 +594,6 @@
             'src/processor/pathname_stripper.cc',
             'src/processor/pathname_stripper.h',
           ],
-
           'include_dirs': [
             'src',
             'src/client',
@@ -589,7 +620,6 @@
               '-Wno-unused-value',
             ],
           },
-
           'sources': [
             'linux/breakpad_googletest_includes.h',
             'src/client/linux/handler/exception_handler_unittest.cc',
@@ -617,7 +647,6 @@
             'src/tools/linux/md2core/minidump_memory_range.h',
             'src/tools/linux/md2core/minidump_memory_range_unittest.cc',
           ],
-
           'include_dirs': [
             'linux', # Use our copy of breakpad_googletest_includes.h
             'src',
@@ -648,7 +677,6 @@
           'sources': [
             'src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc',
           ],
-
           'include_dirs': [
             'src',
             '..',
@@ -665,15 +693,12 @@
           # GN version: //breakpad:generate_test_dump
           'target_name': 'generate_test_dump',
           'type': 'executable',
-
           'sources': [
             'linux/generate-test-dump.cc',
           ],
-
           'dependencies': [
             'breakpad_client',
           ],
-
           'include_dirs': [
             '..',
             'src',
@@ -693,15 +718,12 @@
           # GN version: //breakpad:minidump-2-core
           'target_name': 'minidump-2-core',
           'type': 'executable',
-
           'sources': [
             'src/tools/linux/md2core/minidump-2-core.cc'
           ],
-
           'dependencies': [
             'breakpad_client',
           ],
-
           'include_dirs': [
             '..',
             'src',
@@ -711,15 +733,12 @@
           # GN version: //breakpad:core-2-minidump
           'target_name': 'core-2-minidump',
           'type': 'executable',
-
           'sources': [
             'src/tools/linux/core2md/core2md.cc'
           ],
-
           'dependencies': [
             'breakpad_client',
           ],
-
           'include_dirs': [
             '..',
             'src',
@@ -890,6 +909,24 @@
             'outputs': [ '<(PRODUCT_DIR)/breakpad_unittests_stripped' ],
             'action': [ '<(android_strip)', '<@(_inputs)', '-o', '<@(_outputs)' ],
           }],
+        },
+        {
+          'target_name': 'breakpad_unittests_deps',
+          'type': 'none',
+          'dependencies': [
+            'breakpad_unittests_stripped',
+          ],
+          # For the component build, ensure dependent shared libraries are
+          # stripped and put alongside breakpad_unittest to simplify pushing to
+          # the device.
+          'variables': {
+             'output_dir': '<(PRODUCT_DIR)/breakpad_unittests_deps/',
+             'native_binary': '<(PRODUCT_DIR)/breakpad_unittests_stripped',
+             'include_main_binary': 0,
+          },
+          'includes': [
+            '../build/android/native_app_dependencies.gypi'
+          ],
         }
       ],
     }],
