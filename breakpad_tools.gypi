@@ -3,11 +3,7 @@
 # found in the LICENSE file.
 
 {
-  'conditions': [
-    ['OS=="android"', {
-      'toolsets': ['host'],
-    }],
-  ],
+  'toolsets': ['host'],
   'variables': {
     'clang_warning_flags': ['-Wno-tautological-constant-out-of-range-compare'],
   },
