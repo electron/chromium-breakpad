@@ -231,6 +231,8 @@
 
             # dwarf2reader.cc uses dynamic_cast.
             'GCC_ENABLE_CPP_RTTI': 'YES',
+
+            'MACOSX_DEPLOYMENT_TARGET': '<(mac_deployment_target)',
           },
           'link_settings': {
             'libraries': [

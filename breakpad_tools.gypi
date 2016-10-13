@@ -15,4 +15,7 @@
     'src',
     'src/third_party',
   ],
+  'xcode_settings': {
+    'MACOSX_DEPLOYMENT_TARGET': '<(mac_deployment_target)',
+  },
 }
