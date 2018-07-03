@@ -1,3 +1,0 @@
-[submodule "src"]
-	path = src
-	url = https://chromium.googlesource.com/breakpad/breakpad/src
